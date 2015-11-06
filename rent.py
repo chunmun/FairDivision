@@ -17,7 +17,7 @@ def makeRoomNStrategy(n):
             return n
     return wantRoomNStrategy
 
-# ============================= Initialization ===============================
+# ============================= Initialization =============================
 
 # Housemates
 housemates = ['A', 'B', 'C']
@@ -25,16 +25,18 @@ housemates = ['A', 'B', 'C']
 # Rooms
 rooms = [1, 2, 3]
 
-
 # This is a dumb strategy where the player always chooses the
 # cheapest room. If tie, choose the smaller numbered room
 strategies = { 'A' : makeRoomNStrategy(3),
                'B' : cheapskateStrategy,
                'C' : makeRoomNStrategy(1) }
+strategies = { 'A' : cheapskateStrategy,
+               'B' : cheapskateStrategy,
+               'C' : cheapskateStrategy }
 
 total_rent = 1000
 
-# ============================= Initialization ===============================
+# ============================= Initialization =============================
 
 import math
 class Point():
@@ -85,8 +87,11 @@ class Triangle():
         self.all_points = []
         self.mid_points = []
         self.inner_triangles = []
+        self.fixed_label = 'AAA'
+        self.good = False
 
         self.initPointsFromCorners()
+        self.labels = ['ABC', 'BAC', 'CAB', 'CBA', 'BCA', 'ACB']
         if initInner:
             self.initInnerTriangles()
 
@@ -111,6 +116,7 @@ class Triangle():
 
     """
     Arrangement of inner triangles
+
                   c0
                   /\
                  /| \
@@ -125,6 +131,24 @@ class Triangle():
         /   .  2  |  3  .     \
        / .        |         .  \
       c1----------m1-----------c2
+
+    Labelling of who to ask
+                   A
+                  /\
+                 /| \
+                / |  \
+               /  |   \
+              /   |    \
+             /    |     \
+            B   0 |  5   B
+           /  .   |   .    \
+          /       C         \
+         /  1  .  |  .  4    \
+        /   .  2  |  3  .     \
+       / .        |         .  \
+      A ----------B ----------- A
+
+
 
       After pulling
 
@@ -155,15 +179,31 @@ class Triangle():
         t5 = Triangle(c[0], b, m[2])
         self.inner_triangles = [t0, t1, t2, t3, t4, t5]
 
+        def isGoodCombi(triangle, *roommates):
+            vals = [triangle.corners[i].decisions[roommates[i]] \
+                    for i in range(len(roommates))]
+            return len(set(vals)) == len(rooms)
+
+        # Set the inner labels and goodness
+        for i in range(len(self.inner_triangles)):
+            t = self.inner_triangles[i]
+            l = self.labels[i]
+            t.fixed_label = l
+            t.good = isGoodCombi(t, l[0], l[1], l[2])
+
+        self.inner_triangles[i].good = [isGoodCombi(self.inner_triangles[i], 
+            self.labels[i][0],
+            self.labels[i][1],
+            self.labels[i][2]) for i in range(3)]
+
     def isGoodMidpoints(self):
         return len(set([i.decisions[housemates[0]] for i in self.mid_points])) == len(rooms)
 
     def isGoodCorners(self):
         return len(set([i.decisions[housemates[0]] for i in self.corners])) == len(rooms)
 
-    def getGoodInnerTriangles(self):
-        good = [t.isGoodCorners() for t in self.inner_triangles]
-        return [self.inner_triangles[i] for i in range(len(self.inner_triangles)) if good[i]]
+    def getGoodInnerTriangle(self):
+        return [i for i in self.inner_triangles if i.good][0]
 
     def __str__(self):
         return "Triangle\n========\n" + "\n".join(list(map(str, self.corners))) + "\n======="
@@ -175,7 +215,7 @@ class Triangle():
 initialTriangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Point(0, 0, total_rent), True)
 
 for i in range(10):
-    initialTriangle = initialTriangle.getGoodInnerTriangles()[0]
-    print("Try {} into {}".format(i, initialTriangle.barycentre_pt))
+    initialTriangle = initialTriangle.getGoodInnerTriangle()
+    print("Try {} into {} with label {}".format(i, initialTriangle.barycentre_pt, initialTriangle.fixed_label))
     initialTriangle.initInnerTriangles()
 
