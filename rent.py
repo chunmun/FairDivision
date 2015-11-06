@@ -176,6 +176,6 @@ initialTriangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Poi
 
 for i in range(10):
     initialTriangle = initialTriangle.getGoodInnerTriangles()[0]
-    print("Try {} into".format(i), initialTriangle)
+    print("Try {} into {}".format(i, initialTriangle.barycentre_pt))
     initialTriangle.initInnerTriangles()
 
