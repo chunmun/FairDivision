@@ -9,7 +9,7 @@ EPS = 0.01
 # This is a dumb strategy where the player always chooses the
 # cheapest room. If tie, choose the smaller numbered room
 
-# room_costs = {'1': 500, '2': 500, '3': 0}
+# room_costs = points
 def strategy(room_costs):
     min_cost = min(room_costs.values())
     return sorted([x for x in room_costs.keys() \
@@ -35,6 +35,9 @@ class Point():
             raise Exception(
                     'Total coordinates does not add up to total rent! {} != {}'
                     .format(coords, total_rent))
+        if len(coords) != len(rooms):
+            raise Exception('Wtf man, why mismatched dimensions? {} != {}'
+                    .format(coords, rooms))
         self.coords = coords
 
     def distance(self, other):
@@ -67,4 +70,5 @@ class Triangle():
         return all_points
 
 initialTriangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Point(0, 0, total_rent))
+
 
