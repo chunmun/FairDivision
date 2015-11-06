@@ -22,7 +22,7 @@ def makeRoomNStrategy(n):
     return wantRoomNStrategy
 
 def randomStrategy(point):
-    return random.randint(len(rooms))
+    return random.randint(0, len(rooms))
 
 # ============================= Initialization =============================
 
@@ -34,11 +34,16 @@ rooms = [1, 2, 3]
 
 # This is a dumb strategy where the player always chooses the
 # cheapest room. If tie, choose the smaller numbered room
-strategies = { 'A' : makeRoomNStrategy(3),
+
+strategies = { 'A' : randomStrategy,
+               'B' : randomStrategy,
+               'C' : randomStrategy }
+
+strategies = { 'A' : cheapskateStrategy,
                'B' : cheapskateStrategy,
                'C' : cheapskateStrategy }
 
-strategies = { 'A' : cheapskateStrategy,
+strategies = { 'A' : makeRoomNStrategy(3),
                'B' : cheapskateStrategy,
                'C' : cheapskateStrategy }
 
@@ -48,13 +53,13 @@ total_rent = 1000
 
 class Point():
     def __init__(self, *coords):
+        if len(coords) != len(rooms):
+            raise Exception('Wtf man, why mismatched dimensions? {} != {}'
+                    .format(coords, rooms))
         if abs(sum(coords) - total_rent) > 1:
             raise Exception(
                     'Total coordinates does not add up to total rent! {} != {}'
                     .format(coords, total_rent))
-        if len(coords) != len(rooms):
-            raise Exception('Wtf man, why mismatched dimensions? {} != {}'
-                    .format(coords, rooms))
         if min(coords) < 0:
             raise Exception('Eh got negative values in the coordinates leh {}'
                     .format(coords))
@@ -92,16 +97,18 @@ class Point():
         return str(self)
 
 class Triangle():
-    def __init__(self, pt1, pt2, pt3, initInner=False):
+    def __init__(self, pt1, pt2, pt3, initInner=False, name=""):
         self.corners = [pt1, pt2, pt3]
         self.all_points = []
         self.mid_points = []
         self.inner_triangles = []
-        self.fixed_label = 'AAA'
+        self.corner_label = 'AAA'
         self.good = False
+        self.name = name
 
         self.initPointsFromCorners()
         self.labels = ['ABC', 'BAC', 'CAB', 'CBA', 'BCA', 'ACB']
+
         if initInner:
             self.initInnerTriangles()
 
@@ -142,7 +149,7 @@ class Triangle():
        / .        |         .  \
       c1----------m1-----------c2
 
-    Labelling of who to ask
+    Labelling of who to ask with Corner label AAA
                    A
                   /\
                  /| \
@@ -176,10 +183,10 @@ class Triangle():
                   \/
                   m1
     """
-    def initChoicesFromFixedLabels(self):
+    def initChoicesFromCornerLabel(self):
         self.choices = ""
-        for i in range(len(self.fixed_label)):
-            l = self.fixed_label[i]
+        for i in range(len(self.corner_label)):
+            l = self.corner_label[i]
             self.choices += str(self.corners[i].decisions[l])
         self.good = all([str(room) in self.choices for room in rooms])
 
@@ -187,59 +194,108 @@ class Triangle():
         c = self.corners
         m = self.mid_points
         b = self.barycentre_pt
-        t0 = Triangle(c[0], m[0], b)
-        t1 = Triangle(m[0], c[1], b)
-        t2 = Triangle(b, c[1], m[1])
-        t3 = Triangle(b, m[1], c[2])
-        t4 = Triangle(m[2], b, c[2])
-        t5 = Triangle(c[0], b, m[2])
-        self.inner_triangles = [t0, t1, t2, t3, t4, t5]
+        t0 = Triangle(c[0], m[0], b, False, self.name + '0')
+        t1 = Triangle(m[0], c[1], b, False, self.name + '1')
+        t2 = Triangle(b, c[1], m[1], False, self.name + '2')
+        t3 = Triangle(b, m[1], c[2], False, self.name + '3')
+        t4 = Triangle(m[2], b, c[2], False, self.name + '4')
+        t5 = Triangle(c[0], b, m[2], False, self.name + '5')
 
-        def isGoodCombi(triangle, *roommates):
-            vals = [triangle.corners[i].decisions[roommates[i]] \
-                    for i in range(len(roommates))]
-            return len(set(vals)) == len(rooms)
+        self.inner_triangles = [t0, t1, t2, t3, t4, t5]
 
         # Set the inner labels and goodness
         for i in range(len(self.inner_triangles)):
             t = self.inner_triangles[i]
             l = self.labels[i]
-            t.fixed_label = l
-            t.initChoicesFromFixedLabels()
+            t.corner_label = l
+            t.initChoicesFromCornerLabel()
+            if t.good:
+                t.generateLabelsFromCornerLabel()
 
-    def isGoodMidpoints(self):
-        return len(set([i.decisions[housemates[0]] for i in self.mid_points])) == len(rooms)
 
-    def isGoodCorners(self):
-        return len(set([i.decisions[housemates[0]] for i in self.corners])) == len(rooms)
+    """
+    Labelling of who to ask from Corner Labels l0 l1 l2
+                  l0 
+                  /\
+                 /| \
+                / |  \
+               /  |   \
+              /   |    \
+             /    |     \
+           l3   0 |  5   l4
+           /  .   |   .    \
+          /      l5         \
+         /  1  .  |  .  4    \
+        /   .  2  |  3  .     \
+       / .        |         .  \
+     l1 ---------l6 ----------- l2
+    """
+    def generateLabelsFromCornerLabel(self):
+        if any([x not in self.corner_label for x in housemates]):
+            raise Exception('Cannot generate labels if non-distinct corner labels {}'
+                    .format(self.corner_label))
+
+        l0 = self.corner_label[0]
+        l1 = self.corner_label[1]
+        l2 = self.corner_label[2]
+        l3 = l2
+        l4 = l1
+        l6 = l0
+        # l5 is a function that gives that last label give 2 labels
+        l5 = lambda x, y: [z for z in housemates if z not in [x, y]][0]
+
+        self.labels = [l0+l3+l5(l0, l3),
+                       l3+l1+l5(l3, l1),
+                       l5(l1, l6)+l1+l6,
+                       l5(l6, l2)+l6+l2,
+                       l4+l5(l4, l2)+l2,
+                       l0+l5(l0, l4)+l4]
+
+
+    def getGoodInnerTriangleIndex(self):
+        t = self.inner_triangles
+        idx = [i for i in range(len(t)) if t[i].good][0]
+        return idx, t[idx]
 
     def getGoodInnerTriangle(self):
         return [i for i in self.inner_triangles if i.good][0]
 
     def __str__(self):
-        return "Triangle\n========\n" + "\n".join(list(map(str, self.corners))) + "\n======="
+        return ", ".join(list(map(str, self.corners)))
+        #return "Triangle\n========\n" + "\n".join(list(map(str, self.corners))) + "\n======="
 
     def __repr__(self):
         return str(self)
 
 
-initial_triangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Point(0, 0, total_rent), True)
+initial_triangle = Triangle(Point(0, 0, total_rent), Point(0, total_rent, 0), Point(total_rent, 0, 0), True)
 i = 1
 last_bary = initial_triangle.barycentre_pt
+
+print("Good Triangle at index {} with corners {}".format(*initial_triangle.getGoodInnerTriangleIndex()))
+
+def debug():
+    for i,t in enumerate(initial_triangle.inner_triangles):
+        print('inner triangle', i, t.corners, t.corner_label, t.choices)
+
 while True:
     try:
         initial_triangle = initial_triangle.getGoodInnerTriangle()
+        initial_triangle.initInnerTriangles()
         new_bary = initial_triangle.barycentre_pt
+
+        debug()
         print("Try {} into {} with choice {} => {}"
                 .format(i, initial_triangle.barycentre_pt,
-                    initial_triangle.fixed_label, initial_triangle.choices))
-        initial_triangle.initInnerTriangles()
+                    initial_triangle.corner_label, initial_triangle.choices))
+
+        print(initial_triangle)
+        print("Good Triangle", initial_triangle.getGoodInnerTriangleIndex())
         i+=1
         if new_bary == last_bary:
             break
         last_bary = new_bary
     except Exception as e:
-        if not isinstance(e, IndexError):
-            print(e.message)
+        print(e.message)
         break
 
