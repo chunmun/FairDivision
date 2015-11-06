@@ -1,5 +1,9 @@
+import math, random
+
 EPS = 0.01
 ROUNDING = 3
+
+# ============================= Strategies =============================
 
 def cheapskateStrategy(point):
     min_cost = min(point.coords)
@@ -16,6 +20,9 @@ def makeRoomNStrategy(n):
         else:
             return n
     return wantRoomNStrategy
+
+def randomStrategy(point):
+    return random.randint(len(rooms))
 
 # ============================= Initialization =============================
 
@@ -39,7 +46,6 @@ total_rent = 1000
 
 # ============================= Initialization =============================
 
-import math
 class Point():
     def __init__(self, *coords):
         if abs(sum(coords) - total_rent) > 1:
