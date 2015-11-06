@@ -29,7 +29,8 @@ rooms = [1, 2, 3]
 # cheapest room. If tie, choose the smaller numbered room
 strategies = { 'A' : makeRoomNStrategy(3),
                'B' : cheapskateStrategy,
-               'C' : makeRoomNStrategy(1) }
+               'C' : cheapskateStrategy }
+
 strategies = { 'A' : cheapskateStrategy,
                'B' : cheapskateStrategy,
                'C' : cheapskateStrategy }
@@ -68,6 +69,9 @@ class Point():
     # Returns the chosen room for a particular housemate
     def query(self, housemate):
         return strategies[housemate](self)
+
+    def __eq__(self, other):
+        return all([abs(self[i] - other[i]) < EPS for i in range(len(self))])
 
     def __len__(self):
         return len(self.coords)
@@ -149,7 +153,6 @@ class Triangle():
       A ----------B ----------- A
 
 
-
       After pulling
 
       m0----------c0-----------m2
@@ -167,6 +170,13 @@ class Triangle():
                   \/
                   m1
     """
+    def initChoicesFromFixedLabels(self):
+        self.choices = ""
+        for i in range(len(self.fixed_label)):
+            l = self.fixed_label[i]
+            self.choices += str(self.corners[i].decisions[l])
+        self.good = all([str(room) in self.choices for room in rooms])
+
     def initInnerTriangles(self):
         c = self.corners
         m = self.mid_points
@@ -189,12 +199,7 @@ class Triangle():
             t = self.inner_triangles[i]
             l = self.labels[i]
             t.fixed_label = l
-            t.good = isGoodCombi(t, l[0], l[1], l[2])
-
-        self.inner_triangles[i].good = [isGoodCombi(self.inner_triangles[i], 
-            self.labels[i][0],
-            self.labels[i][1],
-            self.labels[i][2]) for i in range(3)]
+            t.initChoicesFromFixedLabels()
 
     def isGoodMidpoints(self):
         return len(set([i.decisions[housemates[0]] for i in self.mid_points])) == len(rooms)
@@ -212,13 +217,23 @@ class Triangle():
         return str(self)
 
 
-initialTriangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Point(0, 0, total_rent), True)
-
+initial_triangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Point(0, 0, total_rent), True)
+i = 1
+last_bary = initial_triangle.barycentre_pt
 while True:
     try:
-        initialTriangle = initialTriangle.getGoodInnerTriangle()
-        print("Try {} into {} with label {}".format(i, initialTriangle.barycentre_pt, initialTriangle.fixed_label))
-        initialTriangle.initInnerTriangles()
-    except:
+        initial_triangle = initial_triangle.getGoodInnerTriangle()
+        new_bary = initial_triangle.barycentre_pt
+        print("Try {} into {} with choice {} => {}"
+                .format(i, initial_triangle.barycentre_pt,
+                    initial_triangle.fixed_label, initial_triangle.choices))
+        initial_triangle.initInnerTriangles()
+        i+=1
+        if new_bary == last_bary:
+            break
+        last_bary = new_bary
+    except Exception as e:
+        if not isinstance(e, IndexError):
+            print(e.message)
         break
 
