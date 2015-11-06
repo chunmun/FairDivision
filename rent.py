@@ -15,7 +15,7 @@ def makeRoomNStrategy(n):
         raise Exception('No such room {} in all rooms {}'
                 .format(n, rooms))
     def wantRoomNStrategy(point):
-        if 0 in point.coords:
+        if 0 in point.coords and point.coords[n-1] != 0:
             return cheapskateStrategy(point)
         else:
             return n
@@ -23,6 +23,16 @@ def makeRoomNStrategy(n):
 
 def randomStrategy(point):
     return random.randint(0, len(rooms))
+
+# prices = {1 : 500, 2: 500, 3: 0, 'favorite': 1, 'order': [1,2,3]}
+def makeCapStrategy(prices):
+    def capStrategy(point):
+        if 0 in point.coords and point.coords[prices['favorite']-1] != 0:
+            return cheapskateStrategy(point)
+        for i in prices['order']:
+            if point.coords[i-1] < prices[i]:
+                return i
+    return capStrategy
 
 # ============================= Initialization =============================
 
@@ -44,6 +54,11 @@ strategies = { 'A' : cheapskateStrategy,
                'C' : cheapskateStrategy }
 
 strategies = { 'A' : makeRoomNStrategy(3),
+               'B' : cheapskateStrategy,
+               'C' : cheapskateStrategy }
+
+capA = {1: 500, 2:500, 3:0, 'favorite':1, 'order':[1,2,3]}
+strategies = { 'A' : makeCapStrategy(capA),
                'B' : cheapskateStrategy,
                'C' : cheapskateStrategy }
 
