@@ -4,6 +4,8 @@ housemates = ['A', 'B', 'C']
 # Rooms
 rooms = [1, 2, 3]
 
+EPS = 0.01
+
 # This is a dumb strategy where the player always chooses the
 # cheapest room. If tie, choose the smaller numbered room
 
@@ -18,49 +20,51 @@ def isGoodCoordinate(coord):
 
 total_rent = 1000
 
-# Mesh size
-# This is the number of divisions on each side of the triangle
-mesh_divisions = 2
-size = total_rent / mesh_divisions
+def findPoint(pt1, pt2, t=0.5): # t = 0, return pt1, t = 1, return pt2
+    p1, p2 = [(pt1[i] + pt2[i])*t for i in range(len(pt1)-1)]
+    p3 = total_rent - p1 -p2
+    return Point(p1, p2, p3)
 
-all_points = {} # (r1, r2, r3) : {'A': 1, 'B': 2, 'C': 1}
-possible_points = []
-triangles = []
+# corners = [(1000, 0, 0), (0, 1000, 0), (0, 0, 1000)]
 
-directions = { 'nw' : lambda r1, r2, r3: (r1-1, r2+1, r3),
-               'n'  : lambda r1, r2, r3: (r1, r2+1, r3-1),
-               'e'  : lambda r1, r2, r3: (r1+1, r2, r3-1) }
+import math
+class Point():
+    def __init__(self, *coords):
+        coords = [0 if i < EPS else i for i in coords]
+        if abs(sum(coords) - total_rent) > 1:
+            raise Exception(
+                    'Total coordinates does not add up to total rent! {} != {}'
+                    .format(coords, total_rent))
+        self.coords = coords
 
-# Create the points and find out the preferences of all of them
-for room1 in range(0, mesh_divisions+1):
-    for room2 in range(0, mesh_divisions+1):
-        room3 = mesh_divisions - room1 - room2
-        if room3 < 0:
-            continue
-        possible_points.append((room1, room2, room3))
-        room_costs = { 1: room1 * size, 2: room2 * size, 3: room3 * size }
-        sol = dict([(h, strategy(room_costs)) for h in housemates])
-        all_points[(room1, room2, room3)] = sol
+    def distance(self, other):
+        return math.sqrt(sum([(self.coords[i] - other.coords[i]) ** 2
+            for i in range(len(self.coords))]))
 
+    def __len__(self):
+        return len(self.coords)
 
-# Construct the triangles list
-for pt in possible_points:
-    nw = directions['nw'](*pt)
-    n = directions['n'](*pt)
-    e = directions['e'](*pt)
+    def __getitem__(self, key):
+        return self.coords[key]
 
-    if isGoodCoordinate(n):
-        if isGoodCoordinate(nw):
-            triangles.append((pt, nw, n))
-        if isGoodCoordinate(e):
-            triangles.append((pt, n, e))
+    def __str__(self):
+        return str(self.coords)
 
-def hasGoodAssignment(triangle):
-    prefs = [all_points[p] for p in triangle]
-    print(prefs)
-    return False
+    def __repr__(self):
+        return str(self)
 
+class Triangle():
+    def __init__(self, pt1, pt2, pt3):
+        self.corners = [pt1, pt2, pt3]
+        self.all_points = self.getPointsFromCorners(self.corners)
 
-for triangle in triangles:
-    if hasGoodAssignment(triangle):
-        print(triangle, 'is GOOD')
+    def getPointsFromCorners(self, corners):
+        midpts = []
+        for i in range(len(corners)):
+            midpts.append(findPoint(corners[i], corners[(i+1)%len(corners)]))
+        barycentre_pt = findPoint(corners[0], midpts[1], 2/3)
+        all_points = midpts + corners + [barycentre_pt]
+        return all_points
+
+initialTriangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Point(0, 0, total_rent))
+
