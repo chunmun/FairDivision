@@ -214,8 +214,11 @@ class Triangle():
 
 initialTriangle = Triangle(Point(total_rent, 0, 0), Point(0, total_rent, 0), Point(0, 0, total_rent), True)
 
-for i in range(10):
-    initialTriangle = initialTriangle.getGoodInnerTriangle()
-    print("Try {} into {} with label {}".format(i, initialTriangle.barycentre_pt, initialTriangle.fixed_label))
-    initialTriangle.initInnerTriangles()
+while True:
+    try:
+        initialTriangle = initialTriangle.getGoodInnerTriangle()
+        print("Try {} into {} with label {}".format(i, initialTriangle.barycentre_pt, initialTriangle.fixed_label))
+        initialTriangle.initInnerTriangles()
+    except:
+        break
 
