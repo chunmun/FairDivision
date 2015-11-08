@@ -3,13 +3,11 @@
 var fairDivisionApp = angular.module('fairDivisionApp', []);
 
 fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
-  $scope.PLAYERS = ['A', 'B', 'C'];
-  $scope.currentPlayer = 1;
-
+  $scope.PEOPLE = PEOPLE;
   $scope.meshLevel = 4;
-  $scope.graph = null;
   $scope.canvas = d3.select('#canvas');
   initGraph($scope);
+  $scope.currentNode = $scope.graph.grid[0][0];
 
   $scope.$watch(function(scope) {
     return scope.meshLevel;
@@ -159,7 +157,8 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
       .style('stroke', 'rgb(102, 102, 102)')
       .style('fill', function(d) { return ROOM_COLOR[d.choice]; })
       .classed('vertex-circle', true)
-      .on('click', handleVertexClick);
+      .on('click', handleVertexClick)
+      .on('mouseover', handleVertexMouseOver);
 
     svgContainer
       .selectAll('text')
@@ -181,6 +180,11 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
 
     updateGraph($scope);
     return false;
+  }
+
+  function handleVertexMouseOver(d, i) {
+    $scope.currentNode = d;
+    $scope.$apply();
   }
 
   function updateCurrentVertex(d) {

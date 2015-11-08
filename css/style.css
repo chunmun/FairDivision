@@ -20,3 +20,23 @@ input::-webkit-inner-spin-button {
   top: 20px;
   width: 120px;
 }
+
+.inactive {
+  opacity: 0.6;
+}
+
+.room1 {
+  color: #D27967;
+}
+
+.room2 {
+  color: #FDB142;
+}
+
+.room3 {
+  color: #7797AF;
+}
+
+.bold {
+  font-weight: bold;
+}
