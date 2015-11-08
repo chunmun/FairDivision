@@ -21,36 +21,55 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   function initGraph($scope) {
     $scope.graph = new Graph($scope.meshLevel, 3000);
 
-    var triangles = $scope.graph.subTriangles().map(function(triangle) {
-      // roomCount[i] = number of people refer room i
-      var roomCount = [0, 0, 0];
-      for (var i = 0; i < NUM_OF_PEOPLE; ++i) {
-        roomCount[triangle[i].choice] += 1;
-      }
-      triangle.roomCount = roomCount;
-      return triangle;
-    });
-    var nodes = $scope.graph.nodes();
-
     $scope.canvas.select('svg').remove();
     var svg = $scope.canvas.append('svg')
       .attr('width', 700)
       .attr('height', 600);
-    var svgContainer = svg.append('g')
+    svg.append('g')
       .attr('transform', 'translate(20, 20)');
+    $scope.svg = svg;
 
     // define background pattern for triangle
     addPatternDef(svg, [0, 1]);
     addPatternDef(svg, [1, 2]);
     addPatternDef(svg, [0, 2]);
 
-    svgContainer
+    updateGraph($scope);
+  }
+
+  function addPatternDef(svg, rooms) {
+    var pattern = svg.append('defs')
+      .append('pattern')
+      .attr('id', 'diagonalHatch' + rooms.join('-'))
+      .attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 5)
+      .attr('height', 10);
+
+    pattern.append('path')
+      .attr('d', 'M-2,2 l3,-3 M-4,9 l10,-10 M0,10 l13,-13')
+      .attr('stroke-width', 2)
+      .attr('stroke', ROOM_COLOR[rooms[0]]);
+    pattern.append('path')
+        .attr('d', 'M-2,4 l5,-5 M-5,12 l21,-20 M0,13 l14,-14')
+        .attr('stroke-width', 2)
+        .attr('stroke', ROOM_COLOR[rooms[1]]);
+  }
+
+  function updateGraph($scope) {
+    var triangles = $scope.graph.subTriangles();
+    var nodes = $scope.graph.nodes();
+    var svgContainer = $scope.svg.select('g');
+
+    // Triangles
+    var trianglesSvg = svgContainer
       .selectAll('path')
-      .data(triangles)
+      .data(triangles);
+    trianglesSvg
       .enter()
-      .append('path')
-      .attr('d', function(d) {
-        var displayingCoords = d.map(function(n) { return n.displayingCoord; });
+      .append('path');
+
+    trianglesSvg.attr('d', function(d) {
+        var displayingCoords = d.nodes.map(function(n) { return n.displayingCoord; });
         return 'M' + displayingCoords.join('L') + 'Z';
       })
       .style('opacity', 0.7)
@@ -97,19 +116,40 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
 
         return 1;
       })
-      .style('stroke', 'black');
+      .style('stroke', 'black')
+      .classed('sub-triangle', true);
 
+    // Current vertex
     svgContainer
-      .selectAll('circle')
-      .data(nodes)
+      .selectAll('circle.current-vertex')
+      .data([1])
       .enter()
       .append('circle')
+      .attr('cx', EDGE_SIZE / 2)
+      .attr('cy', 0)
+      .attr('r', 5)
+      .style('fill', 'transparent')
+      .style('stroke', 'rgb(153, 153, 153)')
+      .style('stroke-width', 6)
+      .classed('current-vertex', true);
+
+    // All vertices
+    var verticesSvg = svgContainer
+      .selectAll('circle.vertex-circle')
+      .data(nodes);
+    verticesSvg
+      .enter()
+      .append('circle');
+
+    verticesSvg
       .attr('cx', function(d) { return d.displayingCoord[0]; })
       .attr('cy', function(d) { return d.displayingCoord[1]; })
       .attr('r', 5)
-      .style('stroke', 'rgb(102, 102, 102)')
       .style('stroke-width', 1)
-      .style('fill', function(d) { return ROOM_COLOR[d.choice]; });
+      .style('stroke', 'rgb(102, 102, 102)')
+      .style('fill', function(d) { return ROOM_COLOR[d.choice]; })
+      .classed('vertex-circle', true)
+      .on('click', handleVertexClick);
 
     svgContainer
       .selectAll('text')
@@ -120,25 +160,23 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
       .attr('x', function(d) { return d.displayingCoord[0] + TEXT_OFFSET_X; })
       .attr('y', function(d) { return d.displayingCoord[1] + TEXT_OFFSET_Y; })
       .classed('vertex-label', true);
-
   }
 
-  function addPatternDef(svg, rooms) {
-    var pattern = svg.append('defs')
-      .append('pattern')
-      .attr('id', 'diagonalHatch' + rooms.join('-'))
-      .attr('patternUnits', 'userSpaceOnUse')
-      .attr('width', 5)
-      .attr('height', 10);
+  function handleVertexClick(d, i) {
+    updateCurrentVertex(d);
 
-    pattern.append('path')
-      .attr('d', 'M-2,2 l3,-3 M-4,9 l10,-10 M0,10 l13,-13')
-      .attr('stroke-width', 2)
-      .attr('stroke', ROOM_COLOR[rooms[0]]);
-    pattern.append('path')
-        .attr('d', 'M-2,4 l5,-5 M-5,12 l21,-20 M0,13 l14,-14')
-        .attr('stroke-width', 2)
-        .attr('stroke', ROOM_COLOR[rooms[1]]);
+    var currentVertexGridCoord = d.gridCoord;
+    d.choice = (d.choice + 1) % NUM_OF_PEOPLE;
+    $scope.graph.grid[currentVertexGridCoord[0]][currentVertexGridCoord[1]] = d;
+
+    updateGraph($scope);
+    return false;
+  }
+
+  function updateCurrentVertex(d) {
+    d3.select('circle.current-vertex')
+      .attr('cx', d.displayingCoord[0])
+      .attr('cy', d.displayingCoord[1])
   }
 }]);
 
@@ -204,7 +242,7 @@ function Graph(meshLevel, edgeLength) {
   var meshSize = EDGE_SIZE / meshLevel;
   var verticalMeshSize = meshSize / 2 * Math.sqrt(3);
   var displayingCoord = [EDGE_SIZE / 2, 0];
-  for (var i = 0; i <= this.meshLevel; ++i) {
+  for (var i = 0; i <= meshLevel; ++i) {
     var row = [];
 
     for (var j = 0; j <= i; ++j) {
@@ -242,23 +280,26 @@ Graph.prototype = {
   //
   //  To cover all the triangles, each 'inner' node (not on the right longer edge) could cover 2 triangles:
   //  right one and right-bottom one. For example, node (1, 0) covers triangle 1 and 2.
+
   subTriangles: function() {
     var triangles = [];
     var triangle;
 
     for (var i = 1; i <= this.meshLevel; ++i) {
       for (var j = 0; j < i; ++j) {
-        triangle = [];
-        triangle.push(this.grid[i + DIRECTIONS['n'][1]][j + DIRECTIONS['n'][0]]);
-        triangle.push(this.grid[i][j]);
-        triangle.push(this.grid[i + DIRECTIONS['e'][1]][j + DIRECTIONS['e'][0]]);
+        triangle = new Triangle(
+          this.grid[i + DIRECTIONS['n'][1]][j + DIRECTIONS['n'][0]],
+          this.grid[i][j],
+          this.grid[i + DIRECTIONS['e'][1]][j + DIRECTIONS['e'][0]]
+        );
         triangles.push(triangle);
 
         if (i != this.meshLevel) {
-          triangle = [];
-          triangle.push(this.grid[i][j]);
-          triangle.push(this.grid[i + DIRECTIONS['se'][1]][j + DIRECTIONS['se'][0]]);
-          triangle.push(this.grid[i + DIRECTIONS['e'][1]][j + DIRECTIONS['e'][0]]);
+          triangle = new Triangle(
+            this.grid[i][j],
+            this.grid[i + DIRECTIONS['se'][1]][j + DIRECTIONS['se'][0]],
+            this.grid[i + DIRECTIONS['e'][1]][j + DIRECTIONS['e'][0]]
+          );
           triangles.push(triangle);
         }
       }
@@ -266,6 +307,7 @@ Graph.prototype = {
 
     return triangles;
   },
+
   gridToString: function() {
     return this.grid.map(function(row) {
       var rowString = row.map(function(node) {
@@ -295,16 +337,27 @@ Node.prototype = {
 };
 
 
+// A triangle consists of 3 nodes
+function Triangle(node1, node2, node3) {
+  this.nodes = [node1, node2, node3];
 
-function trianglesToString(triangles) {
-  return triangles.map(function(t) {
+  // roomCount[i] = number of people refer room i
+  this.roomCount = [0, 0, 0];
+  for (var i = 0; i < NUM_OF_PEOPLE; ++i) {
+    this.roomCount[this.nodes[i].choice] += 1;
+  }
+}
+
+Triangle.prototype = {
+  toString: function() {
     return '[ ' +
-      t.map(function(n) {
+      this.nodes.map(function(n) {
         return n.toString();
       }).join(', ')
       +  ' ]';
-  }).join('; ');
-}
+  }
+};
+
 
 function cheapskateStrategy(prices) {
   if (prices[0] == 0 && prices[1] == 0) {
