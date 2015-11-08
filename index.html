@@ -14,7 +14,7 @@
 
     <script src="js/vendor/modernizr-2.8.3.min.js"></script>
   </head>
-  <body ng-app="FairDivisionApp" ng-controller="abc">
+  <body ng-app="fairDivisionApp" ng-controller="FineMeshController">
     <!--[if lt IE 8]>
         <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -22,11 +22,35 @@
     <!-- Add your site or application content here -->
     <div class="container">
       <div class="row">
-         
+        <div class="col-md-8">
+          <div id="canvas"></div>
+        </div>
+        <div class="col-md-4">
+          <h3>Player {{PLAYERS[currentPlayer]}}</h3>
+
+          <div class="form-group">
+            <label>300$</label>
+            <button class="btn btn-primary">Room 1</button>
+          </div>
+          <div class="form-group">
+            <label>500$</label>
+            <button class="btn btn-primary">Room 2</button>
+          </div>
+          <div class="form-group">
+            <label>200$</label>
+            <button class="btn btn-primary">Room 3</button>
+          </div>
+
+          <div>
+            <button class="btn btn-success" ng-click="changeMeshLevel(-1)" ng-disabled="meshLevel == 2">Smaller</button>
+            <button class="btn btn-success" ng-click="changeMeshLevel(1)" ng-disabled="meshLevel == 16">Bigger</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <script src="js/vendor/jquery-1.11.3.min.js"></script>
+    <script src="js/vendor/d3.min.js"></script>
     <script src="js/vendor/angular.min.js"></script>
     <script src="js/vendor/bootstrap.min.js"></script>
     <script src="js/plugins.js"></script>
