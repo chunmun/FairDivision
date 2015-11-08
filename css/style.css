@@ -1,0 +1,42 @@
+.vertex-label {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  opacity: 0.7;
+  text-anchor: start;
+}
+
+.vertex-circle {
+  cursor: pointer;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#mesh-level-control {
+  position: absolute;
+  top: 20px;
+  width: 120px;
+}
+
+.inactive {
+  opacity: 0.6;
+}
+
+.room1 {
+  color: #D27967;
+}
+
+.room2 {
+  color: #FDB142;
+}
+
+.room3 {
+  color: #7797AF;
+}
+
+.bold {
+  font-weight: bold;
+}
