@@ -177,6 +177,7 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     $scope.graph.grid[currentVertexGridCoord[0]][currentVertexGridCoord[1]] = d;
 
     updateGraph($scope);
+    $scope.$apply();
     return false;
   }
 
