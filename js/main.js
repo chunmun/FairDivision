@@ -21,7 +21,15 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   function initGraph($scope) {
     $scope.graph = new Graph($scope.meshLevel, 3000);
 
-    var triangles = $scope.graph.subTriangles();
+    var triangles = $scope.graph.subTriangles().map(function(triangle) {
+      // roomCount[i] = number of people refer room i
+      var roomCount = [0, 0, 0];
+      for (var i = 0; i < NUM_OF_PEOPLE; ++i) {
+        roomCount[triangle[i].choice] += 1;
+      }
+      triangle.roomCount = roomCount;
+      return triangle;
+    });
     var nodes = $scope.graph.nodes();
 
     $scope.canvas.select('svg').remove();
@@ -47,24 +55,19 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
       })
       .style('opacity', 0.7)
       .style('fill', function(d) {
-        var count = [0, 0, 0];
-        for (var i = 0; i < NUM_OF_PEOPLE; ++i) {
-          count[d[i].choice] += 1;
-        }
-
         // All satisfy!
-        if (count[0] == 0 && count[1] == 0 && count[2] == 0) {
+        if (d.roomCount[0] == 1 && d.roomCount[1] == 1 && d.roomCount[2] == 1) {
           return 'white';
         }
 
         // All choose the same room
-        if (count.indexOf(3) != -1) {
-          return ROOM_COLOR[count.indexOf(3)];
+        if (d.roomCount.indexOf(3) != -1) {
+          return ROOM_COLOR[d.roomCount.indexOf(3)];
         }
 
         // There is a mix
-        var room1 = count.indexOf(2);
-        var room2 = count.indexOf(1);
+        var room1 = d.roomCount.indexOf(2);
+        var room2 = d.roomCount.indexOf(1);
         if (room1 > room2) {
           var temp = room1;
           room1 = room2;
@@ -73,8 +76,27 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
 
         return 'url(#diagonalHatch' + room1 + '-' + room2 + ')';
       })
-      .style('stroke-width', 1)
-      .style('stroke-opacity', 0.3)
+      .style('stroke-width', function(d) {
+        // All choose differently!
+        if (d.roomCount[0] == 1 && d.roomCount[1] == 1 && d.roomCount[2] == 1) {
+          return 2;
+        }
+
+        return 1;
+      })
+      .style('stroke-opacity', function(d) {
+        // All choose the same room
+        if (d.roomCount.indexOf(3) != -1) {
+          return 0.3;
+        }
+
+        // Room with 2 trap doors
+        if (d.roomCount.indexOf(2) != -1) {
+          return 0.7;
+        }
+
+        return 1;
+      })
       .style('stroke', 'black');
 
     svgContainer
