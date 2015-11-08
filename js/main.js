@@ -6,16 +6,26 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   $scope.PLAYERS = ['A', 'B', 'C'];
   $scope.currentPlayer = 1;
 
-  $scope.meshLevel = 2;
+  $scope.meshLevel = 4;
   $scope.graph = null;
   $scope.canvas = d3.select('#canvas');
   initGraph($scope);
 
+  $scope.$watch(function(scope) {
+    return scope.meshLevel;
+  }, function(newValue, oldValue) {
+    if (!newValue || newValue < 2) {
+      console.log(newValue);
+      return;
+    }
+
+    $scope.meshLevel = Math.min(Math.max(newValue, MIN_MESH_LEVEL), MAX_MESH_LEVEL);
+    initGraph($scope);
+  });
+
   $scope.changeMeshLevel = function(change) {
     $scope.meshLevel += change;
     $scope.meshLevel = Math.min(Math.max($scope.meshLevel, MIN_MESH_LEVEL), MAX_MESH_LEVEL);
-
-    initGraph($scope);
   };
 
   function initGraph($scope) {

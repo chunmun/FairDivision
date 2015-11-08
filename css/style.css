@@ -8,3 +8,15 @@
 .vertex-circle {
   cursor: pointer;
 }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#mesh-level-control {
+  position: absolute;
+  top: 20px;
+  width: 120px;
+}
