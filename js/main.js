@@ -21,12 +21,7 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   function initGraph($scope) {
     $scope.graph = new Graph($scope.meshLevel, 3000);
 
-    var triangles = $scope.graph.subTriangles().map(function(t) {
-      return t.map(function(n) {
-        return n.displayingCoord
-      });
-    });
-
+    var triangles = $scope.graph.subTriangles();
     var nodes = $scope.graph.nodes();
 
     $scope.canvas.select('svg').remove();
@@ -36,14 +31,50 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     var svgContainer = svg.append('g')
       .attr('transform', 'translate(20, 20)');
 
+    // define background pattern for triangle
+    addPatternDef(svg, [0, 1]);
+    addPatternDef(svg, [1, 2]);
+    addPatternDef(svg, [0, 2]);
+
     svgContainer
       .selectAll('path')
       .data(triangles)
       .enter()
       .append('path')
-      .attr('d', function(d) { return 'M' + d.join('L') + 'Z'; })
-      .style('fill', 'white')
+      .attr('d', function(d) {
+        var displayingCoords = d.map(function(n) { return n.displayingCoord; });
+        return 'M' + displayingCoords.join('L') + 'Z';
+      })
+      .style('opacity', 0.7)
+      .style('fill', function(d) {
+        var count = [0, 0, 0];
+        for (var i = 0; i < NUM_OF_PEOPLE; ++i) {
+          count[d[i].choice] += 1;
+        }
+
+        // All satisfy!
+        if (count[0] == 0 && count[1] == 0 && count[2] == 0) {
+          return 'white';
+        }
+
+        // All choose the same room
+        if (count.indexOf(3) != -1) {
+          return ROOM_COLOR[count.indexOf(3)];
+        }
+
+        // There is a mix
+        var room1 = count.indexOf(2);
+        var room2 = count.indexOf(1);
+        if (room1 > room2) {
+          var temp = room1;
+          room1 = room2;
+          room2 = temp;
+        }
+
+        return 'url(#diagonalHatch' + room1 + '-' + room2 + ')';
+      })
       .style('stroke-width', 1)
+      .style('stroke-opacity', 0.3)
       .style('stroke', 'black');
 
     svgContainer
@@ -56,7 +87,7 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
       .attr('r', 5)
       .style('stroke', 'rgb(102, 102, 102)')
       .style('stroke-width', 1)
-      .style('fill', function(d) { return VERTEX_FILL_COLOR[d.choice]; });
+      .style('fill', function(d) { return ROOM_COLOR[d.choice]; });
 
     svgContainer
       .selectAll('text')
@@ -68,6 +99,24 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
       .attr('y', function(d) { return d.displayingCoord[1] + TEXT_OFFSET_Y; })
       .classed('vertex-label', true);
 
+  }
+
+  function addPatternDef(svg, rooms) {
+    var pattern = svg.append('defs')
+      .append('pattern')
+      .attr('id', 'diagonalHatch' + rooms.join('-'))
+      .attr('patternUnits', 'userSpaceOnUse')
+      .attr('width', 5)
+      .attr('height', 10);
+
+    pattern.append('path')
+      .attr('d', 'M-2,2 l3,-3 M-4,9 l10,-10 M0,10 l13,-13')
+      .attr('stroke-width', 2)
+      .attr('stroke', ROOM_COLOR[rooms[0]]);
+    pattern.append('path')
+        .attr('d', 'M-2,4 l5,-5 M-5,12 l21,-20 M0,13 l14,-14')
+        .attr('stroke-width', 2)
+        .attr('stroke', ROOM_COLOR[rooms[1]]);
   }
 }]);
 
@@ -116,10 +165,10 @@ var DIRECTIONS = {
 var EDGE_SIZE = 600;
 var TEXT_OFFSET_X = 8;
 var TEXT_OFFSET_Y = -3;
-var VERTEX_FILL_COLOR = {
-  0: 'rgb(210, 121, 103)',
-  1: 'rgb(253, 177, 66)',
-  2: 'rgb(119, 151, 175)'
+var ROOM_COLOR = {
+  0: 'rgb(210, 121, 103)',  // #D27967
+  1: 'rgb(253, 177, 66)',  // #FDB142
+  2: 'rgb(119, 151, 175)'  // #7797AF
 };
 
 
