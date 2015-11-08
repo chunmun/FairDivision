@@ -34,3 +34,7 @@ Approach 2: Divide and Conquer
 ---
 We triangulate the search space using barycentric subdivision and labelling i.e. we have 6 elementary triangles. This is similar to applying the “zooming in” solution in the cake-cutting variant of the problem to rental harmony where the original labelling is not Sperner. The fix involves transforming the triangles as described in the Rental Harmony paper by letting the opposite (n-1) simplex be the decision made at the corner.
 At each vertex, we ask the person that is assigned to that vertex. This would satisfy Sperner’s labelling and consequently, there exist an elementary triangle that we can carry on the process in this triangle to produce a finer answer.
+
+Demo
+====
+http://chunmun.github.io/FairDivision/

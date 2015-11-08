@@ -172,17 +172,17 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   }
 
   function handleVertexClick(d, i) {
-    updateCurrentVertex(d);
-
     var currentVertexGridCoord = d.gridCoord;
     d.choice = (d.choice + 1) % NUM_OF_PEOPLE;
     $scope.graph.grid[currentVertexGridCoord[0]][currentVertexGridCoord[1]] = d;
 
     updateGraph($scope);
+    $scope.$apply();
     return false;
   }
 
   function handleVertexMouseOver(d, i) {
+    updateCurrentVertex(d);
     $scope.currentNode = d;
     $scope.$apply();
   }
