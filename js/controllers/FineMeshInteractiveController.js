@@ -3,7 +3,7 @@
 fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function($scope) {
   $scope.PEOPLE = PEOPLE;
   $scope.hoveringNode = null;
-  $scope.meshLevel = 8;
+  $scope.meshLevel = 4;
   $scope.canvas = d3.select('.fine-mesh-interactive-controller .canvas');
   initResettableValues();
 
