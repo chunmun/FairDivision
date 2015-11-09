@@ -92,10 +92,7 @@ function Graph(meshLevel, edgeLength, personStrategies) {
 
     for (var j = 0; j <= i; ++j) {
       var personLabel = (i + j) % NUM_OF_PEOPLE;
-      var priceRoom3 = Math.round((meshLevel - i) / meshLevel * edgeLength);
-      var priceRoom2 = Math.round(j / meshLevel * edgeLength);
-      var priceRoom1 = edgeLength - priceRoom2 - priceRoom3;
-      var prices = [priceRoom1, priceRoom2, priceRoom3];
+      var prices = calculatePrices(i, j, meshLevel, edgeLength);
       var node = new Node(
         this,
         [i, j],
@@ -112,6 +109,28 @@ function Graph(meshLevel, edgeLength, personStrategies) {
     displayingCoord[1] += verticalMeshSize;
 
     this.grid.push(row);
+  }
+
+  function calculatePrices(i, j, meshLevel, edgeLength) {
+    var priceRoom3 = (meshLevel - i) / meshLevel * edgeLength;
+    var priceRoom2 = j / meshLevel * edgeLength;
+    var priceRoom1 = edgeLength - priceRoom2 - priceRoom3;
+
+    // Some rounding magic to make sure the total does not exceed the total rent and
+    // approximately close prices are rounded to the same integer.
+    priceRoom1 = Math.round(priceRoom1);
+    priceRoom2 = Math.round(priceRoom2);
+    priceRoom3 = Math.round(priceRoom3);
+
+    if (priceRoom1 == priceRoom2) {
+      priceRoom3 = edgeLength - priceRoom1 - priceRoom2;
+    } else if (priceRoom2 == priceRoom3) {
+      priceRoom1 = edgeLength - priceRoom2 - priceRoom3;
+    } else if (priceRoom1 == priceRoom3) {
+      priceRoom2 = edgeLength - priceRoom1 - priceRoom3;
+    }
+
+    return [priceRoom1, priceRoom2, priceRoom3];
   }
 }
 
