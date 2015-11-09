@@ -48,12 +48,12 @@
         <div class="dropdown btn-group">
           <button class="btn btn-default dropdown-toggle" type="button" id="select-starting-person"
                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            Roommate {{ PEOPLE[startingPerson] }}
+            Corner {{ startingCorner + 1 }}
             <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" aria-labelledby="select-starting-person">
             <li ng-repeat="person in PEOPLE">
-              <a href ng-click="selectStartingPerson($index)">Roommate {{ person }}</a>
+              <a href ng-click="selectStartingCorner($index)">Corner {{ $index + 1 }}</a>
             </li>
           </ul>
         </div>
@@ -63,7 +63,7 @@
 
     <div ng-show="hasStarted">
       <div class="question">
-        <h3>Roommate {{ PEOPLE[startingPerson] }}, which room?</h3>
+        <h3>Roommate {{ PEOPLE[startingCorner] }}, which room?</h3>
         <table class="table table-hover">
           <thead>
             <tr>

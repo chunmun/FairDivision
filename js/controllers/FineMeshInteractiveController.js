@@ -23,13 +23,20 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
   // Event callbacks
   $scope.start = function() {
     $scope.hasStarted= true;
-    initCurrentNodeAndTrapDoorEdge();
     updateGraph();
   };
 
-  $scope.selectStartingPerson = function(personIndex) {
-    $scope.startingPerson = personIndex;
-    initCurrentNodeAndTrapDoorEdge();
+  $scope.selectStartingCorner = function(cornerIndex) {
+    $scope.startingCorner = cornerIndex;
+
+    if (cornerIndex === 0) {
+      $scope.currentNode = $scope.graph.grid[0][0];
+    } else if (cornerIndex === 1) {
+      $scope.currentNode = $scope.graph.grid[$scope.meshLevel][0];
+    } else {
+      $scope.currentNode = $scope.graph.grid[$scope.meshLevel][$scope.meshLevel];
+    }
+
     updateGraph();
   };
 
@@ -58,7 +65,9 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
 
     if ($scope.firstChoice) {
       $scope.firstChoice = false;
-      initEdgeChoices();
+      initCornerVerticesAndTrapDoor();
+    } else {
+      // Check node
     }
 
     moveToNextNode();
@@ -70,7 +79,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     $scope.hasStarted = false;
     $scope.firstChoice = true;
     $scope.totalRent = 3000;
-    $scope.startingPerson = 0;
+    $scope.startingCorner = 0;
     $scope.history = [];
   }
 
@@ -238,61 +247,49 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
       .classed('vertex-label', true);
   }
 
-  function initCurrentNodeAndTrapDoorEdge() {
-    if ($scope.startingPerson === 0) {
-      $scope.currentNode = $scope.graph.grid[0][0];
+  function initCornerVerticesAndTrapDoor() {
+    // Starting node is at the top.
+    if ($scope.currentNode == $scope.graph.grid[0][0]) {
+      // Adjacent nodes
+      $scope.graph.grid[1][0].choice = 1;
+      $scope.graph.grid[1][1].choice = 0;
+
+      // Trap door
       $scope.currentTrapDoorEdge = [
         $scope.graph.grid[1][0],
         $scope.graph.grid[1][1],
+        0,
         0
       ];
-    } else if ($scope.startingPerson === 1) {
-      $scope.currentNode = $scope.graph.grid[$scope.meshLevel][0];
-      $scope.currentTrapDoorEdge = [
-        $scope.graph.grid[$scope.meshLevel - 1][0],
-        $scope.graph.grid[$scope.meshLevel][1],
-        2
-      ];
-    } else {
-      $scope.currentNode = $scope.graph.grid[$scope.meshLevel][$scope.meshLevel];
-      $scope.currentTrapDoorEdge = [
-        $scope.graph.grid[$scope.meshLevel - 1][$scope.meshLevel - 1],
-        $scope.graph.grid[$scope.meshLevel][$scope.meshLevel - 1],
-        1
-      ];
-    }
-  }
-
-  function initEdgeChoices() {
-    for (var i = 1; i < $scope.meshLevel; ++i) {
-      // Left edge. Always choose room 2
-      $scope.graph.grid[i][0].choice = 1;
-
-      // Right edge. Always choose room 1.
-      $scope.graph.grid[i][i].choice = 0;
-
-      // Bottom edge. Always choose room 3.
-      $scope.graph.grid[$scope.meshLevel][i].choice = 2;
-    }
-
-    // From the starting node, alternate the choice for the opposite corner to guarantee
-    // the Sperner's labelling. Also label the adjacent nodes.
-    // Starting node is at the top.
-    if ($scope.currentNode == $scope.graph.grid[0][0]) {
-      $scope.graph.grid[$scope.meshLevel][0].choice = ($scope.currentNode.choice + 1) % NUM_OF_PEOPLE;
-      $scope.graph.grid[$scope.meshLevel][$scope.meshLevel].choice = ($scope.currentNode.choice + 2) % NUM_OF_PEOPLE;
     }
 
     // Starting node is at the bottom left.
     if ($scope.currentNode == $scope.graph.grid[$scope.meshLevel][0]) {
-      $scope.graph.grid[$scope.meshLevel][$scope.meshLevel].choice = ($scope.currentNode.choice + 1) % NUM_OF_PEOPLE;
-      $scope.graph.grid[0][0].choice = ($scope.currentNode.choice + 2) % NUM_OF_PEOPLE;
+      // Adjacent nodes
+      $scope.graph.grid[$scope.meshLevel - 1][0].choice = 1;
+      $scope.graph.grid[$scope.meshLevel][1].choice = 2;
+
+      // Trap door
+      $scope.currentTrapDoorEdge = [
+        $scope.graph.grid[$scope.meshLevel - 1][0],
+        $scope.graph.grid[$scope.meshLevel][1],
+        2,
+        1
+      ];
     }
 
     // Starting node is at the bottom right.
     if ($scope.currentNode == $scope.graph.grid[$scope.meshLevel][$scope.meshLevel]) {
-      $scope.graph.grid[0][0].choice = ($scope.currentNode.choice + 1) % NUM_OF_PEOPLE;
-      $scope.graph.grid[$scope.meshLevel][0].choice = ($scope.currentNode.choice + 2) % NUM_OF_PEOPLE;
+      // Adjacent nodes
+      $scope.graph.grid[$scope.meshLevel - 1][$scope.meshLevel - 1].choice = 0;
+      $scope.graph.grid[$scope.meshLevel][$scope.meshLevel - 1].choice = 2;
+
+      $scope.currentTrapDoorEdge = [
+        $scope.graph.grid[$scope.meshLevel - 1][$scope.meshLevel - 1],
+        $scope.graph.grid[$scope.meshLevel][$scope.meshLevel - 1],
+        1,
+        0
+      ];
     }
   }
 
@@ -302,18 +299,18 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
   // 0. Horizontal edge
   //          (i - 1, j)
   //              *
-  //              |
+  //              |   0
   //              |
   //      (i, j)  *====*  (i, j + 1)
   //                   |
-  //                   |
+  //               1   |
   //                   *
-  //                (i + 1, j)
+  //                (i + 1, j + 1)
   //
   // 1. Vertical edge
   //      (i, j - 1)  *----*  (i, j)
   //                       #
-  //                       #
+  //                   1   #   0
   //                       #
   //           (i + 1, j)  *----*  (i + 1, j + 1)
   //
@@ -322,12 +319,38 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
   //
   //      (i, j) *----* (i, j + 1)
   //               \
-  //                \
-  //                 \
+  //                \  0
+  //              1  \
   //                  \
   //  (i + 1, j) *----* (i + 1, j + 1)
   //
+  //  A trap door edge is stored as an array of 4 element
+  //  - start node (i, j)
+  //  - end node
+  //  - type: 0, 1 or 2
+  //  - direction coming from: 0 or 1 (based on the above diagram
   function moveToNextNode() {
-
+    var type = $scope.currentTrapDoorEdge[2];
+    var direction = $scope.currentTrapDoorEdge[3];
+    var startNodeGridCoord = $scope.currentTrapDoorEdge[0].gridCoord;
+    if (type === 0) {
+      if (direction === 0) {
+        $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0] + 1][startNodeGridCoord[1] + 1];
+      } else {
+        $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0] - 1][startNodeGridCoord[1]];
+      }
+    } else if (type === 1) {
+      if (direction === 0) {
+        $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0]][startNodeGridCoord[1] - 1];
+      } else {
+        $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0] + 1][startNodeGridCoord[1] + 1];
+      }
+    } else {
+      if (direction === 0) {
+        $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0] + 1][startNodeGridCoord[1]];
+      } else {
+        $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0]][startNodeGridCoord[1] + 1];
+      }
+    }
   }
 }]);
