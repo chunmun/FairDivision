@@ -34,7 +34,6 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     return scope.meshLevel;
   }, function(newValue, oldValue) {
     if (!newValue || newValue < 2) {
-      console.log(newValue);
       return;
     }
 
