@@ -92,8 +92,8 @@ function Graph(meshLevel, edgeLength, personStrategies) {
 
     for (var j = 0; j <= i; ++j) {
       var personLabel = (i + j) % NUM_OF_PEOPLE;
-      var priceRoom3 = (meshLevel - i) / meshLevel * edgeLength;
-      var priceRoom2 = j / meshLevel * edgeLength;
+      var priceRoom3 = Math.round((meshLevel - i) / meshLevel * edgeLength);
+      var priceRoom2 = Math.round(j / meshLevel * edgeLength);
       var priceRoom1 = edgeLength - priceRoom2 - priceRoom3;
       var prices = [priceRoom1, priceRoom2, priceRoom3];
       var node = new Node(
