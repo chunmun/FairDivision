@@ -77,7 +77,7 @@ var ROOM_COLOR = {
 };
 
 
-function Graph(meshLevel, edgeLength) {
+function Graph(meshLevel, edgeLength, personStrategies) {
   this.meshLevel = meshLevel;
   this.edgeLength = edgeLength;
 
@@ -96,7 +96,15 @@ function Graph(meshLevel, edgeLength) {
       var priceRoom2 = j / meshLevel * edgeLength;
       var priceRoom1 = edgeLength - priceRoom2 - priceRoom3;
       var prices = [priceRoom1, priceRoom2, priceRoom3];
-      row.push(new Node(this, [i, j], displayingCoord.slice(), personLabel, prices));
+      var node = new Node(
+        this,
+        [i, j],
+        displayingCoord.slice(),
+        personLabel,
+        prices,
+        personStrategies ? personStrategies[personLabel] : null
+      );
+      row.push(node);
       displayingCoord[0] += meshSize;
     }
 
@@ -166,13 +174,13 @@ Graph.prototype = {
 
 
 //  A node is a vertex of the grid representing the graph
-function Node(graph, gridCoord, displayingCoord, personLabel, prices) {
+function Node(graph, gridCoord, displayingCoord, personLabel, prices, strategy) {
   this.graph = graph;
   this.gridCoord = gridCoord;   // Using vertical-horizontal order
   this.displayingCoord = displayingCoord;  // Using horizontal-vertical order
   this.personLabel = personLabel;
   this.prices = prices;
-  this.choice = cheapskateStrategy(prices);
+  this.choice = strategy ? strategy(prices) : STRATEGIES.cheapskateStrategy(prices);
 }
 
 Node.prototype = {
@@ -204,35 +212,93 @@ Triangle.prototype = {
 };
 
 
-function cheapskateStrategy(prices) {
-  if (prices[0] == 0 && prices[1] == 0) {
+var STRATEGIES = (function() {
+  var strategies = {};
+
+  // Always choose the cheapest room. Use the following rules when there is a ties
+  //
+  // Two rooms cost 0
+  // - 0 and 1: choose 0
+  // - 1 and 2: choose 1
+  // - 0 and 2: choose 2
+  //
+  // Two rooms have the same cheapest price
+  // - 0 and 1: choose 1
+  // - 1 and 2: choose 2
+  // - 0 and 2: choose 0
+  //
+  // Three rooms have the same price. Choose room 1 (or any room).
+  strategies.cheapskateStrategy = function(prices) {
+    if (prices[0] == 0 && prices[1] == 0) {
+      return 0;
+    }
+
+    if (prices[1] == 0 && prices[2] == 0) {
+      return 1;
+    }
+
+    if (prices[0] == 0 && prices[2] == 0) {
+      return 2;
+    }
+
+    if (prices[0] == prices[1] && prices[1] == prices[2]) {
+      // This can be any room
+      return 1;
+    }
+
+    if (prices[0] == prices[1] && prices[1] < prices [2]) {
+      return 1;
+    }
+
+    if (prices[1] == prices[2] && prices[2] < prices [0]) {
+      return 2;
+    }
+
+    if (prices[0] == prices[2] && prices[0] < prices [1]) {
+      return 0;
+    }
+
+    return prices.indexOf(prices.slice().sort(function(a, b) { return a - b; })[0])
+  };
+
+  // Always choose room 1 as long as the prices of other rooms are none 0.
+  strategies.room1Strategy = function(prices) {
+    if (prices[1] == 0) {
+      return 1;
+    }
+
+    if (prices[2] == 0) {
+      return 2;
+    }
+
     return 0;
-  }
+  };
 
-  if (prices[1] == 0 && prices[2] == 0) {
+  // Always choose room 2 as long as the prices of other rooms are none 0.
+  strategies.room2Strategy = function(prices) {
+    if (prices[0] == 0) {
+      return 0;
+    }
+
+    if (prices[2] == 0) {
+      return 2;
+    }
+
     return 1;
-  }
+  };
 
-  if (prices[0] == 0 && prices[2] == 0) {
+  // Always choose room 1 as long as the prices of other rooms are none 0.
+  strategies.room3Strategy = function(prices) {
+    if (prices[0] == 0) {
+      return 0;
+    }
+
+    if (prices[1] == 0) {
+      return 1;
+    }
+
     return 2;
-  }
+  };
 
-  if (prices[0] == prices[1] && prices[1] == prices[2]) {
-    // This can be any room
-    return 1;
-  }
-
-  if (prices[0] == prices[1] && prices[1] < prices [2]) {
-    return 1;
-  }
-
-  if (prices[1] == prices[2] && prices[2] < prices [0]) {
-    return 2;
-  }
-
-  if (prices[0] == prices[2] && prices[0] < prices [1]) {
-    return 0;
-  }
-
-  return prices.indexOf(prices.slice().sort(function(a, b) { return a - b; })[0])
-}
+  return strategies;
+})();

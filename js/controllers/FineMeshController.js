@@ -2,11 +2,30 @@
 
 fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   $scope.PEOPLE = PEOPLE;
+  $scope.ALL_STRATEGIES = {
+    'cheapskate': {
+      'name': 'Cheapskate',
+      'f': STRATEGIES.cheapskateStrategy
+    },
+    'room1': {
+      'name': 'Room 1',
+      'f': STRATEGIES.room1Strategy
+    },
+    'room2': {
+      'name': 'Room 2',
+      'f': STRATEGIES.room2Strategy
+    },
+    'room3': {
+      'name': 'Room 3',
+      'f': STRATEGIES.room3Strategy
+    }
+  };
+  $scope.totalRent = 3000;
+  $scope.personStrategies = ['cheapskate', 'cheapskate', 'cheapskate'];
   $scope.meshLevel = 4;
   $scope.canvas = d3.select('.fine-mesh-controller .canvas');
-  initGraph($scope);
-  $scope.currentNode = $scope.graph.grid[0][0];
 
+  // Variables watched
   $scope.$watch(function(scope) {
     return scope.meshLevel;
   }, function(newValue, oldValue) {
@@ -16,16 +35,30 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     }
 
     $scope.meshLevel = Math.min(Math.max(newValue, MIN_MESH_LEVEL), MAX_MESH_LEVEL);
-    initGraph($scope);
+    $scope.refreshGraph();
   });
+
+  // Event callbacks
+  $scope.selectPersonStrategy = function(personIndex, strategy) {
+    $scope.personStrategies[personIndex] = strategy;
+  };
 
   $scope.changeMeshLevel = function(change) {
     $scope.meshLevel += change;
     $scope.meshLevel = Math.min(Math.max($scope.meshLevel, MIN_MESH_LEVEL), MAX_MESH_LEVEL);
   };
 
+  $scope.refreshGraph = function() {
+    initGraph($scope);
+    $scope.currentNode = $scope.graph.grid[0][0];
+  };
+
+  // Init the graph
+  $scope.refreshGraph();
+
   function initGraph($scope) {
-    $scope.graph = new Graph($scope.meshLevel, 3000);
+    var personStrategyFunctions = $scope.personStrategies.map(function (s) { return $scope.ALL_STRATEGIES[s].f; });
+    $scope.graph = new Graph($scope.meshLevel, $scope.totalRent, personStrategyFunctions);
 
     $scope.canvas.select('svg').remove();
     var svg = $scope.canvas.append('svg')

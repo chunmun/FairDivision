@@ -44,3 +44,28 @@ input::-webkit-inner-spin-button {
 .bold {
   font-weight: bold;
 }
+
+.starting-info {
+  padding-top: 10px;
+}
+
+.starting-info .form-inline {
+  margin-bottom: 10px;
+}
+
+.starting-info table {
+  margin-bottom: 5px;
+}
+
+.form-inline > label {
+  padding: 0 50px 0 8px;
+}
+
+th, td {
+  vertical-align: middle !important;
+}
+
+.info {
+  padding-top: 60px;
+}
+
