@@ -14,52 +14,28 @@
 
     <script src="js/vendor/modernizr-2.8.3.min.js"></script>
   </head>
-  <body ng-app="fairDivisionApp" ng-controller="FineMeshController">
+  <body ng-app="fairDivisionApp" ng-controller="AppController">
     <!--[if lt IE 8]>
         <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
     <!-- Add your site or application content here -->
+
     <div class="container">
       <div class="row">
-        <div class="col-md-8">
-          <div id="canvas"></div>
-          <div id="mesh-level-control" class="form-group">
-            <label for="mesh-level">Mesh Level</label>
-            <div class="input-group">
-              <span class="input-group-btn">
-                <button class="btn btn-default" ng-click="changeMeshLevel(-1)">
-                  <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                </button>
-              </span>
-              <input ng-model="meshLevel" id="mesh-level" class="form-control" type="number" min="1" max="16" step="1"
-                     value="{{ meshLevel }}">
-              <span class="input-group-btn">
-                <button class="btn btn-default" ng-click="changeMeshLevel(1)">
-                  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                </button>
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <h3>Player {{ PEOPLE[currentNode.personLabel] }}</h3>
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Room</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr ng-repeat="price in currentNode.prices track by $index"
-                  ng-class="$index == currentNode.choice ? 'active' : 'inactive'">
-                <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
-                <td ng-class="{'bold': $index == currentNode.choice}">$ {{ price }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs">
+          <li ng-class="{ active: isTabSelected(0) }">
+            <a href ng-click="selectTab(0)">{{ tabs[0].name }}</a>
+          </li>
+          <li ng-class="{ active: isTabSelected(1) }">
+            <a href ng-click="selectTab(1)">{{ tabs[1].name }}</a>
+          </li>
+        </ul>
+
+        <!-- Tab content -->
+        <div ng-include="tabs[currentTab].template_url"></div>
+
       </div>
     </div>
 
@@ -68,6 +44,8 @@
     <script src="js/vendor/angular.min.js"></script>
     <script src="js/vendor/bootstrap.min.js"></script>
     <script src="js/plugins.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/controllers/FineMeshController.js"></script>
+    <script src="js/controllers/FineMeshInteractiveController.js"></script>
   </body>
 </html>

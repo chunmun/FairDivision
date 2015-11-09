@@ -1,3 +1,7 @@
+.canvas {
+  padding-top: 20px;
+}
+
 .vertex-label {
   font-family: Arial, sans-serif;
   font-size: 11px;
@@ -15,7 +19,7 @@ input::-webkit-inner-spin-button {
     margin: 0;
 }
 
-#mesh-level-control {
+.mesh-level-control {
   position: absolute;
   top: 20px;
   width: 120px;
