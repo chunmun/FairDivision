@@ -62,7 +62,7 @@
     </div>
 
     <div ng-show="hasStarted">
-      <div class="question">
+      <div class="question" ng-hide="solutionFound">
         <h3>Roommate {{ PEOPLE[startingCorner] }}, which room?</h3>
         <table class="table table-hover">
           <thead>
@@ -75,14 +75,36 @@
             <tr ng-repeat="price in currentNode.prices track by $index" ng-click="selectRow($index)"
                 ng-class="{ 'unclickable': price === totalRent }">
               <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
-              <td ng-class="{'bold': $index == currentNode.choice}">$ {{ price }}</td>
+              <td ng-class="{ 'bold': $index == currentNode.choice }">$ {{ price }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="history">
+      <div class="solution" ng-show="solutionFound">
+        <h3 class="text-center alert alert-success">Congratulation!!!</h3>
+      </div>
+
+      <div class="history-block">
         <h3>Past Choices</h3>
+        <table class="table table-compact">
+          <thead>
+            <tr>
+              <th>Roommate</th>
+              <th>Room 1</th>
+              <th>Room 2</th>
+              <th>Room 3</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="record in history track by $index">
+              <td class="text-center">{{ PEOPLE[record.person] }}</td>
+              <td ng-class="{ 'bold': record.choice == 0 }">{{ record.prices[0] }}</td>
+              <td ng-class="{ 'bold': record.choice == 1 }">{{ record.prices[1] }}</td>
+              <td ng-class="{ 'bold': record.choice == 2 }">{{ record.prices[2] }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <button class="btn btn-primary" ng-click="restart()">Restart</button>

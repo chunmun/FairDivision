@@ -67,7 +67,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
       $scope.firstChoice = false;
       initCornerVerticesAndTrapDoor();
     } else {
-      // Check node
+      checkSatisfactionOrFindNewTrapDoor();
     }
 
     moveToNextNode();
@@ -81,6 +81,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     $scope.totalRent = 3000;
     $scope.startingCorner = 0;
     $scope.history = [];
+    $scope.solutionFound = false;
   }
 
   function initGraph() {
@@ -164,7 +165,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
       .style('stroke-width', function(d) {
         // All choose differently!
         if (d.roomCount[0] == 1 && d.roomCount[1] == 1 && d.roomCount[2] == 1) {
-          return 2;
+          return 3;
         }
 
         return 1;
@@ -350,6 +351,58 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
         $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0] + 1][startNodeGridCoord[1]];
       } else {
         $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0]][startNodeGridCoord[1] + 1];
+      }
+    }
+  }
+
+  function checkSatisfactionOrFindNewTrapDoor() {
+    var type = $scope.currentTrapDoorEdge[2];
+    var direction = $scope.currentTrapDoorEdge[3];
+    var edgeStartNode = $scope.currentTrapDoorEdge[0];
+    var edgeEndNode = $scope.currentTrapDoorEdge[1];
+    var currentNode = $scope.currentNode;
+
+    if (currentNode.choice !== edgeStartNode.choice && currentNode.choice !== edgeEndNode.choice) {
+      $scope.solutionFound = true;
+    } else if (currentNode.choice !== edgeStartNode.choice) {
+      if (type === 0) {
+        if (direction === 0) {
+          $scope.currentTrapDoorEdge = [edgeStartNode, currentNode, 2, 0];
+        } else {
+          $scope.currentTrapDoorEdge = [currentNode, edgeStartNode, 1, 0];
+        }
+      } else if (type === 1) {
+        if (direction === 0) {
+          $scope.currentTrapDoorEdge = [currentNode, edgeStartNode, 0, 1];
+        } else {
+          $scope.currentTrapDoorEdge = [edgeStartNode, currentNode, 2, 1];
+        }
+      } else {
+        if (direction === 0) {
+          $scope.currentTrapDoorEdge = [edgeStartNode, currentNode, 1, 0];
+        } else {
+          $scope.currentTrapDoorEdge = [edgeStartNode, currentNode, 0, 1];
+        }
+      }
+    } else if (currentNode.choice !== edgeEndNode.choice) {
+      if (type === 0) {
+        if (direction === 0) {
+          $scope.currentTrapDoorEdge = [edgeEndNode, currentNode, 1, 1];
+        } else {
+          $scope.currentTrapDoorEdge = [currentNode, edgeEndNode, 2, 1];
+        }
+      } else if (type === 1) {
+        if (direction === 0) {
+          $scope.currentTrapDoorEdge = [currentNode, edgeEndNode, 2, 0];
+        } else {
+          $scope.currentTrapDoorEdge = [edgeEndNode, currentNode, 0, 0];
+        }
+      } else {
+        if (direction === 0) {
+          $scope.currentTrapDoorEdge = [currentNode, edgeEndNode, 0, 0];
+        } else {
+          $scope.currentTrapDoorEdge = [currentNode, edgeEndNode, 1, 1];
+        }
       }
     }
   }
