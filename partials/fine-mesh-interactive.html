@@ -1,41 +1,113 @@
-<div class="fine-mesh-interactive-controller" id="fine-mesh-interactive"
-     ng-controller="FineMeshInteractiveController">
+<div class="fine-mesh-interactive-controller" id="fine-mesh-interactive" ng-controller="FineMeshInteractiveController">
   <div class="col-md-8">
     <div class="canvas"></div>
-    <div class="mesh-level-control form-group">
+    <div class="mesh-level-control form-group" ng-hide="hasStarted">
       <label for="mesh-level">Mesh Level</label>
       <div class="input-group">
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="changeMeshLevel(-1)">
+          <button class="btn btn-default" ng-click="changeMeshLevel(-1)" ng-disabled="meshLevel <= 2">
             <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
           </button>
         </span>
         <input ng-model="meshLevel" id="mesh-level" class="form-control" type="number" min="1" max="16" step="1"
                value="{{ meshLevel }}">
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="changeMeshLevel(1)">
+          <button class="btn btn-default" ng-click="changeMeshLevel(1)" ng-disabled="meshLevel >= 16">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
           </button>
         </span>
       </div>
     </div>
+    <div class="hovering-info" ng-show="hoveringNode !== null && hoveringNode.choice !== null">
+      <h4>Roommate {{ PEOPLE[hoveringNode.personLabel] }}</h4>
+      <table class="table table-condensed">
+        <thead>
+          <tr>
+            <th>Room</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="price in hoveringNode.prices track by $index"
+              ng-class="$index == hoveringNode.choice ? 'active' : 'inactive'">
+            <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
+            <td ng-class="{'bold': $index == hoveringNode.choice}">$ {{ price }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   <div class="col-md-4">
-    <h3>Player {{ PEOPLE[currentNode.personLabel] }}</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Room</th>
-          <th>Price</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="price in currentNode.prices track by $index"
-            ng-class="$index == currentNode.choice ? 'active' : 'inactive'">
-          <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
-          <td ng-class="{'bold': $index == currentNode.choice}">$ {{ price }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="starting-info" ng-hide="hasStarted">
+      <div class="form-group form-inline">
+        <label for="total-rent">Total Rent</label>
+        <input ng-model="totalRent" id="total-rent" class="form-control" type="number" value="{{ totalRent }}">
+      </div>
+      <div class="form-group form-inline">
+        <label for="select-starting-person">Start with</label>
+        <div class="dropdown btn-group">
+          <button class="btn btn-default dropdown-toggle" type="button" id="select-starting-person"
+                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Corner {{ startingCorner + 1 }}
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="select-starting-person">
+            <li ng-repeat="person in PEOPLE">
+              <a href ng-click="selectStartingCorner($index)">Corner {{ $index + 1 }}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <button class="btn btn-success" ng-click="start()">Visualize</button>
+    </div>
+
+    <div ng-show="hasStarted">
+      <div class="question" ng-hide="solutionFound">
+        <h3>Roommate {{ PEOPLE[startingCorner] }}, which room?</h3>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Room</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="price in currentNode.prices track by $index" ng-click="selectRow($index)"
+                ng-class="{ 'unclickable': price === totalRent }">
+              <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
+              <td ng-class="{ 'bold': $index == currentNode.choice }">$ {{ price }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="solution" ng-show="solutionFound">
+        <h3 class="text-center alert alert-success">Congratulation!!!</h3>
+      </div>
+
+      <div class="history-block">
+        <h3>Past Choices</h3>
+        <table class="table table-compact">
+          <thead>
+            <tr>
+              <th>Roommate</th>
+              <th>Room 1</th>
+              <th>Room 2</th>
+              <th>Room 3</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="record in history track by $index">
+              <td class="text-center">{{ PEOPLE[record.person] }}</td>
+              <td ng-class="{ 'bold': record.choice == 0 }">{{ record.prices[0] }}</td>
+              <td ng-class="{ 'bold': record.choice == 1 }">{{ record.prices[1] }}</td>
+              <td ng-class="{ 'bold': record.choice == 2 }">{{ record.prices[2] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-primary" ng-click="restart()">Restart</button>
+    </div>
   </div>
 </div>

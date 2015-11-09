@@ -25,11 +25,8 @@
       <div class="row">
         <!-- Nav tabs -->
         <ul class="nav nav-tabs">
-          <li ng-class="{ active: isTabSelected(0) }">
-            <a href ng-click="selectTab(0)">{{ tabs[0].name }}</a>
-          </li>
-          <li ng-class="{ active: isTabSelected(1) }">
-            <a href ng-click="selectTab(1)">{{ tabs[1].name }}</a>
+          <li ng-repeat="tab in tabs" ng-class="{ active: isTabSelected($index) }">
+            <a href ng-click="selectTab($index)">{{ tabs[$index].name }}</a>
           </li>
         </ul>
 

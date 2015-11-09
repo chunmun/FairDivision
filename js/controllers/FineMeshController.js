@@ -2,30 +2,67 @@
 
 fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   $scope.PEOPLE = PEOPLE;
+  $scope.ALL_STRATEGIES = {
+    'cheapskate': {
+      'name': 'Cheapskate',
+      'f': STRATEGIES.cheapskateStrategy
+    },
+    'room1': {
+      'name': 'Room 1',
+      'f': STRATEGIES.room1Strategy
+    },
+    'room2': {
+      'name': 'Room 2',
+      'f': STRATEGIES.room2Strategy
+    },
+    'room3': {
+      'name': 'Room 3',
+      'f': STRATEGIES.room3Strategy
+    },
+    'random': {
+      'name': 'Random',
+      'f': STRATEGIES.randomStrategy
+    }
+  };
+  $scope.totalRent = 3000;
+  $scope.personStrategies = ['cheapskate', 'cheapskate', 'cheapskate'];
   $scope.meshLevel = 4;
   $scope.canvas = d3.select('.fine-mesh-controller .canvas');
-  initGraph($scope);
-  $scope.currentNode = $scope.graph.grid[0][0];
 
+  // Variables watches
   $scope.$watch(function(scope) {
     return scope.meshLevel;
   }, function(newValue, oldValue) {
     if (!newValue || newValue < 2) {
-      console.log(newValue);
       return;
     }
 
     $scope.meshLevel = Math.min(Math.max(newValue, MIN_MESH_LEVEL), MAX_MESH_LEVEL);
-    initGraph($scope);
+    $scope.resetGraph();
   });
+
+  // Event callbacks
+  $scope.selectPersonStrategy = function(personIndex, strategy) {
+    $scope.personStrategies[personIndex] = strategy;
+  };
 
   $scope.changeMeshLevel = function(change) {
     $scope.meshLevel += change;
     $scope.meshLevel = Math.min(Math.max($scope.meshLevel, MIN_MESH_LEVEL), MAX_MESH_LEVEL);
   };
 
-  function initGraph($scope) {
-    $scope.graph = new Graph($scope.meshLevel, 3000);
+  $scope.resetGraph = function() {
+    initGraph();
+    $scope.currentNode = $scope.graph.grid[0][0];
+  };
+
+  // Init the graph
+  $scope.resetGraph();
+
+  // Private functions
+  function initGraph() {
+    var personStrategyFunctions = $scope.personStrategies.map(function (s) { return $scope.ALL_STRATEGIES[s].f; });
+    $scope.graph = new Graph($scope.meshLevel, $scope.totalRent, personStrategyFunctions);
 
     $scope.canvas.select('svg').remove();
     var svg = $scope.canvas.append('svg')
@@ -40,7 +77,7 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     addPatternDef(svg, [1, 2]);
     addPatternDef(svg, [0, 2]);
 
-    updateGraph($scope);
+    updateGraph();
   }
 
   function addPatternDef(svg, rooms) {
@@ -61,7 +98,7 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
         .attr('stroke', ROOM_COLOR[rooms[1]]);
   }
 
-  function updateGraph($scope) {
+  function updateGraph() {
     var triangles = $scope.graph.subTriangles();
     var nodes = $scope.graph.nodes();
     var svgContainer = $scope.svg.select('g');
@@ -154,7 +191,7 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
       .style('stroke-width', 1)
       .style('stroke', 'rgb(102, 102, 102)')
       .style('fill', function(d) { return ROOM_COLOR[d.choice]; })
-      .classed('vertex-circle', true)
+      .classed('vertex-circle clickable', true)
       .on('click', handleVertexClick)
       .on('mouseover', handleVertexMouseOver);
 
@@ -174,7 +211,7 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     d.choice = (d.choice + 1) % NUM_OF_PEOPLE;
     $scope.graph.grid[currentVertexGridCoord[0]][currentVertexGridCoord[1]] = d;
 
-    updateGraph($scope);
+    updateGraph();
     $scope.$apply();
     return false;
   }
@@ -185,9 +222,9 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     $scope.$apply();
   }
 
-  function updateCurrentVertex(d) {
+  function updateCurrentVertex(node) {
     d3.select('circle.current-vertex')
-      .attr('cx', d.displayingCoord[0])
-      .attr('cy', d.displayingCoord[1])
+      .attr('cx', node.displayingCoord[0])
+      .attr('cy', node.displayingCoord[1])
   }
 }]);

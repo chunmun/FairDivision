@@ -5,14 +5,14 @@
       <label for="mesh-level">Mesh Level</label>
       <div class="input-group">
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="changeMeshLevel(-1)">
+          <button class="btn btn-default" ng-click="changeMeshLevel(-1)" ng-disabled="meshLevel <= 2">
             <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
           </button>
         </span>
         <input ng-model="meshLevel" id="mesh-level" class="form-control" type="number" min="1" max="16" step="1"
                value="{{ meshLevel }}">
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="changeMeshLevel(1)">
+          <button class="btn btn-default" ng-click="changeMeshLevel(1)" ng-disabled="meshLevel >= 16">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
           </button>
         </span>
@@ -20,21 +20,60 @@
     </div>
   </div>
   <div class="col-md-4">
-    <h3>Player {{ PEOPLE[currentNode.personLabel] }}</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Room</th>
-          <th>Price</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="price in currentNode.prices track by $index"
-            ng-class="$index == currentNode.choice ? 'active' : 'inactive'">
-          <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
-          <td ng-class="{'bold': $index == currentNode.choice}">$ {{ price }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="starting-info">
+      <div class="form-group form-inline">
+        <label class="left-align-with-table" for="total-rent">Total Rent</label>
+        <input ng-model="totalRent" id="total-rent" class="form-control" type="number" value="{{ totalRent }}">
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-md-5">Roommate</th>
+            <th class="col-md-7">Strategy</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="personStrategy in personStrategies track by $index">
+            <td>Roommate {{ PEOPLE[$index] }}</td>
+            <td>
+              <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="{{ 'strategyMenu' + $index }}"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                  {{ ALL_STRATEGIES[personStrategy].name }}
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="{{ 'strategyMenu' + $index }}">
+                  <li ng-repeat="(strategy, strategyProperties) in ALL_STRATEGIES">
+                    <a href ng-click="selectPersonStrategy($parent.$index, strategy)">{{ strategyProperties.name }}</a>
+                  </li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button class="btn btn-success left-align-with-table" ng-click="resetGraph()">Visualize</button>
+    </div>
+
+    <div class="info">
+      <h3>Roommate {{ PEOPLE[currentNode.personLabel] }}</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Room</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="price in currentNode.prices track by $index"
+              ng-class="$index == currentNode.choice ? 'active' : 'inactive'">
+            <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
+            <td ng-class="{'bold': $index == currentNode.choice}">$ {{ price }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
