@@ -18,6 +18,10 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
     'room3': {
       'name': 'Room 3',
       'f': STRATEGIES.room3Strategy
+    },
+    'random': {
+      'name': 'Random',
+      'f': STRATEGIES.randomStrategy
     }
   };
   $scope.totalRent = 3000;

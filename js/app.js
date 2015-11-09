@@ -300,5 +300,10 @@ var STRATEGIES = (function() {
     return 2;
   };
 
+  // Randomly choose a room
+  strategies.randomStrategy = function(prices) {
+    return Math.floor(Math.random() * 3);
+  };
+
   return strategies;
 })();
