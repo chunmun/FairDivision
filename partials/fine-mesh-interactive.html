@@ -1,0 +1,41 @@
+<div class="fine-mesh-interactive-controller" id="fine-mesh-interactive"
+     ng-controller="FineMeshInteractiveController">
+  <div class="col-md-8">
+    <div class="canvas"></div>
+    <div class="mesh-level-control form-group">
+      <label for="mesh-level">Mesh Level</label>
+      <div class="input-group">
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-click="changeMeshLevel(-1)">
+            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+          </button>
+        </span>
+        <input ng-model="meshLevel" id="mesh-level" class="form-control" type="number" min="1" max="16" step="1"
+               value="{{ meshLevel }}">
+        <span class="input-group-btn">
+          <button class="btn btn-default" ng-click="changeMeshLevel(1)">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+          </button>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <h3>Player {{ PEOPLE[currentNode.personLabel] }}</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="price in currentNode.prices track by $index"
+            ng-class="$index == currentNode.choice ? 'active' : 'inactive'">
+          <td>Room <b class="{{ 'room' + ($index + 1) }}">{{ $index + 1 }}</b></td>
+          <td ng-class="{'bold': $index == currentNode.choice}">$ {{ price }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
