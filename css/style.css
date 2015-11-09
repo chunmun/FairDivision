@@ -10,7 +10,6 @@
 }
 
 .vertex-circle {
-  cursor: pointer;
 }
 
 input::-webkit-outer-spin-button,
@@ -58,7 +57,7 @@ input::-webkit-inner-spin-button {
 }
 
 .form-inline > label {
-  padding: 0 50px 0 8px;
+  width: 130px;
 }
 
 th, td {
@@ -69,3 +68,33 @@ th, td {
   padding-top: 60px;
 }
 
+.left-align-with-table {
+  margin-left: 8px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.table-hover > tbody > tr:not(.unclickable) {
+  cursor: pointer;
+}
+
+.unclickable {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.hovering-info {
+  position: absolute;
+  top: 20px;
+  width: 150px;
+}
+
+.hovering-info h4 {
+  margin-bottom: 2px;
+}
+
+.hovering-info table {
+  margin-left: -4px;
+}

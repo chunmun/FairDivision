@@ -199,7 +199,7 @@ function Node(graph, gridCoord, displayingCoord, personLabel, prices, strategy) 
   this.displayingCoord = displayingCoord;  // Using horizontal-vertical order
   this.personLabel = personLabel;
   this.prices = prices;
-  this.choice = strategy ? strategy(prices) : STRATEGIES.cheapskateStrategy(prices);
+  this.choice = typeof(strategy) === "function" ? strategy(prices) : null;
 }
 
 Node.prototype = {

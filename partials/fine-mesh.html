@@ -5,14 +5,14 @@
       <label for="mesh-level">Mesh Level</label>
       <div class="input-group">
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="changeMeshLevel(-1)">
+          <button class="btn btn-default" ng-click="changeMeshLevel(-1)" ng-disabled="meshLevel <= 2">
             <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
           </button>
         </span>
         <input ng-model="meshLevel" id="mesh-level" class="form-control" type="number" min="1" max="16" step="1"
                value="{{ meshLevel }}">
         <span class="input-group-btn">
-          <button class="btn btn-default" ng-click="changeMeshLevel(1)">
+          <button class="btn btn-default" ng-click="changeMeshLevel(1)" ng-disabled="meshLevel >= 16">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
           </button>
         </span>
@@ -22,7 +22,7 @@
   <div class="col-md-4">
     <div class="starting-info">
       <div class="form-group form-inline">
-        <label for="total-rent">Total Rent</label>
+        <label class="left-align-with-table" for="total-rent">Total Rent</label>
         <input ng-model="totalRent" id="total-rent" class="form-control" type="number" value="{{ totalRent }}">
       </div>
 
@@ -54,7 +54,7 @@
         </tbody>
       </table>
 
-      <button class="btn btn-success" ng-click="refreshGraph()">Visualize</button>
+      <button class="btn btn-success left-align-with-table" ng-click="resetGraph()">Visualize</button>
     </div>
 
     <div class="info">
