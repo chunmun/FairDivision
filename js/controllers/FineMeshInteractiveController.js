@@ -81,7 +81,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     $scope.totalRent = 3000;
     $scope.startingCorner = 0;
     $scope.history = [];
-    $scope.solutionFound = false;
+    $scope.solutionFound = 0;  // 0: running, 1: success, 2: failed
   }
 
   function initGraph() {
@@ -223,7 +223,6 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
       .classed('vertex-circle', true)
       .on('mouseover', function(d, i) {
         $scope.hoveringNode = d;
-        console.log(d);
         $scope.$apply();
       })
       .on('mouseout', function(d, i) {
@@ -334,6 +333,15 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     var type = $scope.currentTrapDoorEdge[2];
     var direction = $scope.currentTrapDoorEdge[3];
     var startNodeGridCoord = $scope.currentTrapDoorEdge[0].gridCoord;
+
+    // Check that we're not going out of the grid through the trap door.
+    if ((type === 0 && direction === 0 && startNodeGridCoord[0] === $scope.meshLevel)
+      || (type === 1 && direction === 0 && startNodeGridCoord[1] === 0)
+      || (type === 2 && direction === 1 && startNodeGridCoord[0] === startNodeGridCoord[1])) {
+      $scope.solutionFound = 2;
+      return;
+    }
+
     if (type === 0) {
       if (direction === 0) {
         $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0] + 1][startNodeGridCoord[1] + 1];
@@ -363,7 +371,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     var currentNode = $scope.currentNode;
 
     if (currentNode.choice !== edgeStartNode.choice && currentNode.choice !== edgeEndNode.choice) {
-      $scope.solutionFound = true;
+      $scope.solutionFound = 1;
     } else if (currentNode.choice !== edgeStartNode.choice) {
       if (type === 0) {
         if (direction === 0) {
