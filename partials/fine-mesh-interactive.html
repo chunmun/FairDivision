@@ -81,16 +81,20 @@
         </table>
       </div>
 
-      <div class="solution" ng-show="solutionFound">
+      <div class="solution" ng-show="solutionFound === 1">
         <h3 class="text-center alert alert-success">Congratulation!!!</h3>
+      </div>
+
+      <div class="solution" ng-show="solutionFound === 2">
+        <h3 class="text-center alert alert-danger">Oops, try again!</h3>
       </div>
 
       <div class="history-block">
         <h3>Past Choices</h3>
-        <table class="table table-compact">
+        <table class="table table-condensed">
           <thead>
             <tr>
-              <th>Roommate</th>
+              <th class="text-center">Roommate</th>
               <th>Room 1</th>
               <th>Room 2</th>
               <th>Room 3</th>

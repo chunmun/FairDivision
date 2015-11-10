@@ -81,7 +81,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     $scope.totalRent = 3000;
     $scope.startingCorner = 0;
     $scope.history = [];
-    $scope.solutionFound = false;
+    $scope.solutionFound = 0;  // 0: running, 1: success, 2: failed
   }
 
   function initGraph() {
@@ -353,6 +353,11 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
         $scope.currentNode = $scope.graph.grid[startNodeGridCoord[0]][startNodeGridCoord[1] + 1];
       }
     }
+
+    // If the next node is undefined i.e. outside the grid, we're done!
+    if ($scope.currentNode === undefined) {
+      $scope.solutionFound = 2;
+    }
   }
 
   function checkSatisfactionOrFindNewTrapDoor() {
@@ -363,7 +368,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     var currentNode = $scope.currentNode;
 
     if (currentNode.choice !== edgeStartNode.choice && currentNode.choice !== edgeEndNode.choice) {
-      $scope.solutionFound = true;
+      $scope.solutionFound = 1;
     } else if (currentNode.choice !== edgeStartNode.choice) {
       if (type === 0) {
         if (direction === 0) {
