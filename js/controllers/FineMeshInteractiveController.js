@@ -80,6 +80,7 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     $scope.firstChoice = true;
     $scope.totalRent = 3000;
     $scope.startingCorner = 0;
+    $scope.currentTrapDoorEdge = undefined;
     $scope.history = [];
     $scope.solutionFound = 0;  // 0: running, 1: success, 2: failed
   }
@@ -189,19 +190,46 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
     // Current vertex
     var currentVertexVsg = svgContainer
       .selectAll('circle.current-vertex')
-      .data([1]);
+      .data([$scope.currentNode]);
     currentVertexVsg
       .enter()
       .append('circle');
 
     currentVertexVsg
-      .attr('cx', $scope.currentNode.displayingCoord[0])
-      .attr('cy', $scope.currentNode.displayingCoord[1])
+      .attr('cx', function(d) { return d.displayingCoord[0]; })
+      .attr('cy', function(d) { return d.displayingCoord[1]; })
       .attr('r', 5)
       .style('fill', 'transparent')
       .style('stroke', 'rgb(153, 153, 153)')
       .style('stroke-width', 6)
       .classed('current-vertex', true);
+
+    // Highlight trap door edge.
+    var trapDoorEdgeSvg = svgContainer
+      .selectAll('line');
+
+    if ($scope.currentTrapDoorEdge) {
+      // Add trap door edge before the vertices so it appears underneath.
+      trapDoorEdgeSvg = trapDoorEdgeSvg.data([$scope.currentTrapDoorEdge]);
+    } else {
+      trapDoorEdgeSvg = trapDoorEdgeSvg.data([]);
+    }
+
+    trapDoorEdgeSvg
+      .exit()
+      .remove();
+
+    trapDoorEdgeSvg
+      .enter()
+      .insert('line', 'circle');
+
+    trapDoorEdgeSvg
+      .attr('x1', function(d) { return d[0].displayingCoord[0]; })
+      .attr('y1', function(d) { return d[0].displayingCoord[1]; })
+      .attr('x2', function(d) { return d[1].displayingCoord[0]; })
+      .attr('y2', function(d) { return d[1].displayingCoord[1]; })
+      .style('stroke-width', 3)
+      .style('stroke', 'black');
 
     // All vertices
     var verticesSvg = svgContainer
