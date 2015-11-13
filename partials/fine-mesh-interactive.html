@@ -18,6 +18,9 @@
         </span>
       </div>
     </div>
+    <div class="help-sign" title="Explanation">
+      <span class="clickable glyphicon glyphicon-info-sign" aria-hidden="true" ng-click="showHelp()"></span>
+    </div>
     <div class="hovering-info" ng-show="hoveringNode !== null && hoveringNode.choice !== null">
       <h4>Roommate {{ PEOPLE[hoveringNode.personLabel] }}</h4>
       <table class="table table-condensed">

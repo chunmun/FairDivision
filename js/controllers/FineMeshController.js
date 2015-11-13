@@ -1,6 +1,6 @@
 'use strict';
 
-fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
+fairDivisionApp.controller('FineMeshController', ['$scope', '$uibModal', function($scope, $uibModal) {
   $scope.PEOPLE = PEOPLE;
   $scope.ALL_STRATEGIES = {
     'cheapskate': {
@@ -54,6 +54,15 @@ fairDivisionApp.controller('FineMeshController', ['$scope', function($scope) {
   $scope.resetGraph = function() {
     initGraph();
     $scope.currentNode = $scope.graph.grid[0][0];
+  };
+
+  $scope.showHelp = function() {
+    $uibModal.open({
+      animation: true,
+      templateUrl: 'partials/fine-mesh-help.html',
+      controller: 'HelpController',
+      size: 'lg'
+    });
   };
 
   // Init the graph

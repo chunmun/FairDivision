@@ -1,6 +1,6 @@
 'use strict';
 
-var fairDivisionApp = angular.module('fairDivisionApp', []);
+var fairDivisionApp = angular.module('fairDivisionApp', ['ui.bootstrap']);
 
 fairDivisionApp.controller('AppController', ['$scope', function($scope) {
   $scope.currentTab = 0;

@@ -1,6 +1,6 @@
 'use strict';
 
-fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function($scope) {
+fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', '$uibModal', function($scope, $uibModal) {
   $scope.PEOPLE = PEOPLE;
   $scope.hoveringNode = null;
   $scope.meshLevel = 4;
@@ -72,6 +72,15 @@ fairDivisionApp.controller('FineMeshInteractiveController', ['$scope', function(
 
     moveToNextNode();
     updateGraph();
+  };
+
+  $scope.showHelp = function() {
+    $uibModal.open({
+      animation: true,
+      templateUrl: 'partials/fine-mesh-interactive-help.html',
+      controller: 'HelpController',
+      size: 'lg'
+    });
   };
 
   // Private functions
