@@ -1,0 +1,67 @@
+<h3>Color Scheme</h3>
+
+<h4>Vertices</h4>
+<p>The color of a vertex represents the room chosen by the person at that price cut.</p>
+<table>
+  <tbody>
+    <tr>
+      <td class="col-md-1"><div class="color-legend color-background-room1"></div></td>
+      <td class="col-md-11">Room 1</td>
+    </tr>
+    <tr>
+      <td class="col-md-1"><div class="color-legend color-background-room2"></div></td>
+      <td class="col-md-11">Room 2</td>
+    </tr>
+    <tr>
+      <td class="col-md-1"><div class="color-legend color-background-room3"></div></td>
+      <td class="col-md-11">Room 3</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>Triangles</h4>
+<p>The color of a triangle represents the room references of 3 roommates within the price cut.</p>
+<table>
+  <tbody>
+    <tr>
+      <td class="col-md-1"><div class="color-legend color-background-all-room"></div></td>
+      <td class="col-md-11">Hooray! Each roommate chooses a different room</td>
+    </tr>
+    <tr>
+      <td class="col-md-1">
+        <svg class="color-legend" width="50" height="25">
+          <rect width="50" height="25" fill="url(#diagonalHatch0-1)"></rect>
+        </svg>
+      </td>
+      <td class="col-md-11">Room 1 and 2 are preferred</td>
+    </tr>
+    <tr>
+      <td class="col-md-1">
+        <svg class="color-legend" width="50" height="25">
+          <rect width="50" height="25" fill="url(#diagonalHatch1-2)"></rect>
+        </svg>
+      </td>
+      <td class="col-md-11">Room 2 and 3 are preferred</td>
+    </tr>
+    <tr>
+      <td class="col-md-1">
+        <svg class="color-legend" width="50" height="25">
+          <rect width="50" height="25" fill="url(#diagonalHatch0-2)"></rect>
+        </svg>
+      </td>
+      <td class="col-md-11">Room 1 and 3 are preferred</td>
+    </tr>
+    <tr>
+      <td class="col-md-1"><div class="color-legend color-background-room1"></div></td>
+      <td class="col-md-11">All choose room 1</td>
+    </tr>
+    <tr>
+      <td class="col-md-1"><div class="color-legend color-background-room2"></div></td>
+      <td class="col-md-11">All choose room 2</td>
+    </tr>
+    <tr>
+      <td class="col-md-1"><div class="color-legend color-background-room3"></div></td>
+      <td class="col-md-11">All choose room 3</td>
+    </tr>
+  </tbody>
+</table>
